@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Auto Loan Arcade</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --cyan: #05f7ff;
+    --magenta: #ff2bd6;
+    --gold: #ffd23f;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: radial-gradient(circle at 50% 0%, #1a0f2e 0%, #0a0612 55%, #05030a 100%);
+    font-family: 'VT323', monospace;
+    color: #fff;
+  }
+  .arcade-title {
+    font-family: 'Press Start 2P', monospace;
+    animation: flicker 4s infinite;
+  }
+  @keyframes flicker {
+    0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
+    20%, 24%, 55% { opacity: 0.4; }
+  }
+  @keyframes pulseGlow {
+    0%, 100% { filter: drop-shadow(0 0 8px currentColor); }
+    50% { filter: drop-shadow(0 0 20px currentColor); }
+  }
+  @keyframes shakeX {
+    0%, 100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+  }
+  @keyframes fall {
+    0% { transform: translateY(-40px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(360deg); opacity: 0.9; }
+  }
+  @keyframes jackpotPop {
+    0% { transform: scale(0.3) rotate(-8deg); opacity: 0; }
+    60% { transform: scale(1.15) rotate(2deg); opacity: 1; }
+    100% { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  .neon-cyan { color: var(--cyan); text-shadow: 0 0 6px var(--cyan), 0 0 18px var(--cyan), 0 0 34px #0891a8; }
+  .neon-magenta { color: var(--magenta); text-shadow: 0 0 6px var(--magenta), 0 0 18px var(--magenta), 0 0 34px #8a0e73; }
+  .neon-gold { color: var(--gold); text-shadow: 0 0 6px var(--gold), 0 0 18px var(--gold), 0 0 34px #a17d0f; }
+
+  .cabinet {
+    position: relative;
+    width: 100%;
+    max-width: 640px;
+    border-radius: 20px;
+    padding: 32px;
+    background: linear-gradient(180deg, #1c1330 0%, #120b21 100%);
+    border: 2px solid #3a2a5c;
+  }
+  .cabinet.shake { animation: shakeX 0.5s ease; }
+
+  .marquee { text-align: center; margin-bottom: 24px; }
+  .marquee-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; }
+  .marquee h1 { font-size: 18px; letter-spacing: 1px; margin: 0; }
+  .marquee .sub { font-size: 20px; }
+  .car-icon { font-size: 26px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 480px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+  .field label {
+    display: block;
+    font-size: 17px;
+    margin-bottom: 4px;
+  }
+  .field input {
+    width: 100%;
+    padding: 8px 12px;
+    font-size: 22px;
+    font-family: 'VT323', monospace;
+    color: #fff;
+    background: #150e26;
+    border: 2px solid #05f7ff55;
+    border-radius: 6px;
+    outline: none;
+  }
+  .field.gold input { border-color: #ffd23f55; }
+  .field input:focus { border-color: var(--cyan); }
+  .field.gold input:focus { border-color: var(--gold); }
+
+  .btn-row { display: flex; gap: 12px; justify-content: center; margin-bottom: 24px; }
+  .btn-calc {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 13px;
+    color: #fff;
+    background: linear-gradient(180deg, #ff2bd6 0%, #a10e8a 100%);
+    border: none;
+    padding: 14px 24px;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 6px 0 #6b0a5c, 0 8px 14px rgba(255,43,214,0.4);
+    transition: transform 0.08s ease, box-shadow 0.08s ease;
+  }
+  .btn-calc:active {
+    transform: translateY(4px);
+    box-shadow: 0 2px 0 #6b0a5c, 0 4px 8px rgba(255,43,214,0.4);
+  }
+  .btn-reset {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    color: #d1d5db;
+    background: linear-gradient(180deg, #2a2440 0%, #171228 100%);
+    border: 2px solid #4a3d70;
+    padding: 12px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
+
+  .scoreboard {
+    display: none;
+    border-radius: 12px;
+    padding: 20px;
+    background: #08050f;
+    border: 2px solid #3a2a5c;
+    box-shadow: inset 0 0 20px rgba(5,247,255,0.08);
+  }
+  .stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    text-align: center;
+  }
+  @media (max-width: 480px) {
+    .stats { grid-template-columns: 1fr; }
+  }
+  .stat-label { font-size: 15px; letter-spacing: 1px; color: #9ca3af; margin-bottom: 6px; }
+  .stat-value { font-family: 'Press Start 2P', monospace; font-size: 16px; }
+  .over-budget { text-align: center; margin-top: 16px; font-size: 22px; }
+
+  .overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    align-items: center;
+    justify-content: center;
+    background: rgba(5,3,10,0.72);
+  }
+  .overlay.show { display: flex; }
+  .jackpot-box { text-align: center; animation: jackpotPop 0.5s ease-out; }
+  .trophy { font-size: 56px; display: block; margin-bottom: 8px; animation: pulseGlow 0.8s infinite; }
+  .jackpot-title { font-size: 40px; letter-spacing: 2px; }
+  .jackpot-sub { font-size: 26px; margin-top: 10px; }
+
+  .coin {
+    position: fixed;
+    top: -30px;
+    z-index: 60;
+    animation-name: fall;
+    animation-timing-function: cubic-bezier(0.4,0,0.6,1);
+    animation-fill-mode: forwards;
+  }
+</style>
+</head>
+<body>
+
+  <div class="overlay" id="overlay">
+    <div class="jackpot-box">
+      <span class="trophy neon-gold">🏆</span>
+      <div class="arcade-title neon-gold jackpot-title">JACKPOT!</div>
+      <div class="neon-cyan jackpot-sub" id="jackpotSub"></div>
+    </div>
+  </div>
+
+  <div class="cabinet" id="cabinet">
+    <div class="marquee">
+      <div class="marquee-row">
+        <span class="car-icon neon-cyan">🚗</span>
+        <h1 class="arcade-title neon-cyan">AUTO LOAN ARCADE</h1>
+        <span class="car-icon neon-cyan" style="transform: scaleX(-1);">🚗</span>
+      </div>
+      <div class="sub neon-magenta">INSERT NUMBERS TO PLAY</div>
+    </div>
+
+    <div class="grid">
+      <div class="field">
+        <label class="neon-cyan">LOAN AMOUNT ($)</label>
+        <input type="number" id="amount" value="32000" />
+      </div>
+      <div class="field">
+        <label class="neon-cyan">INTEREST RATE (%)</label>
+        <input type="number" step="0.01" id="rate" value="6.5" />
+      </div>
+      <div class="field">
+        <label class="neon-cyan">LOAN TERM (YEARS)</label>
+        <input type="number" id="years" value="5" />
+      </div>
+      <div class="field gold">
+        <label class="neon-gold">MAX $/MONTH GOAL</label>
+        <input type="number" id="budget" value="500" />
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-calc" id="calcBtn">⚡ CALCULATE</button>
+      <button class="btn-reset" id="resetBtn">↺ RESET</button>
+    </div>
+
+    <div class="scoreboard" id="scoreboard">
+      <div class="stats">
+        <div>
+          <div class="stat-label">MONTHLY PAYMENT</div>
+          <div class="stat-value neon-cyan" id="monthlyOut">$0</div>
+        </div>
+        <div>
+          <div class="stat-label">TOTAL PAID</div>
+          <div class="stat-value neon-magenta" id="totalOut">$0</div>
+        </div>
+        <div>
+          <div class="stat-label">TOTAL INTEREST</div>
+          <div class="stat-value neon-gold" id="interestOut">$0</div>
+        </div>
+      </div>
+      <div class="over-budget neon-magenta" id="overBudget" style="display:none;"></div>
+    </div>
+  </div>
+
+<script>
+  const fmt = (v) => Math.round(v).toLocaleString();
+
+  function runCalc() {
+    const P = parseFloat(document.getElementById('amount').value) || 0;
+    const annualRate = parseFloat(document.getElementById('rate').value) || 0;
+    const n = (parseFloat(document.getElementById('years').value) || 0) * 12;
+    const B = parseFloat(document.getElementById('budget').value) || 0;
+
+    if (P <= 0 || n <= 0) return;
+
+    const r = annualRate / 100 / 12;
+    let M;
+    if (r === 0) {
+      M = P / n;
+    } else {
+      M = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+    }
+    const total = M * n;
+    const interest = total - P;
+    const hitJackpot = B > 0 && M <= B;
+
+    document.getElementById('monthlyOut').textContent = '$' + fmt(M);
+    document.getElementById('totalOut').textContent = '$' + fmt(total);
+    document.getElementById('interestOut').textContent = '$' + fmt(interest);
+    document.getElementById('scoreboard').style.display = 'block';
+
+    const overBudgetEl = document.getElementById('overBudget');
+    if (B > 0 && !hitJackpot) {
+      overBudgetEl.style.display = 'block';
+      overBudgetEl.textContent = '$' + fmt(Math.abs(B - M)) + '/mo OVER YOUR GOAL — TRY NEW NUMBERS';
+    } else {
+      overBudgetEl.style.display = 'none';
+    }
+
+    if (hitJackpot) {
+      showJackpot(B - M);
+    } else {
+      const cabinet = document.getElementById('cabinet');
+      cabinet.classList.add('shake');
+      setTimeout(() => cabinet.classList.remove('shake'), 500);
+    }
+  }
+
+  function showJackpot(margin) {
+    const overlay = document.getElementById('overlay');
+    document.getElementById('jackpotSub').textContent =
+      "You're under budget by $" + fmt(margin) + "/mo";
+    overlay.classList.add('show');
+
+    // spawn coins
+    for (let i = 0; i < 24; i++) {
+      const coin = document.createElement('div');
+      coin.className = 'coin neon-gold';
+      coin.textContent = '🪙';
+      coin.style.left = Math.random() * 100 + '%';
+      coin.style.fontSize = (14 + Math.random() * 18) + 'px';
+      coin.style.animationDelay = (Math.random() * 0.6) + 's';
+      coin.style.animationDuration = (1.4 + Math.random() * 1.2) + 's';
+      overlay.appendChild(coin);
+      setTimeout(() => coin.remove(), 3200);
+    }
+
+    setTimeout(() => overlay.classList.remove('show'), 2600);
+  }
+
+  function resetAll() {
+    ['amount', 'rate', 'years', 'budget'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('scoreboard').style.display = 'none';
+  }
+
+  document.getElementById('calcBtn').addEventListener('click', runCalc);
+  document.getElementById('resetBtn').addEventListener('click', resetAll);
+</script>
+
+</body>
+</html>
