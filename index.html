@@ -11,6 +11,7 @@
     --cyan: #05f7ff;
     --magenta: #ff2bd6;
     --gold: #ffd23f;
+    --green: #39ff88;
   }
   * { box-sizing: border-box; }
   body {
@@ -55,11 +56,12 @@
   .neon-cyan { color: var(--cyan); text-shadow: 0 0 6px var(--cyan), 0 0 18px var(--cyan), 0 0 34px #0891a8; }
   .neon-magenta { color: var(--magenta); text-shadow: 0 0 6px var(--magenta), 0 0 18px var(--magenta), 0 0 34px #8a0e73; }
   .neon-gold { color: var(--gold); text-shadow: 0 0 6px var(--gold), 0 0 18px var(--gold), 0 0 34px #a17d0f; }
+  .neon-green { color: var(--green); text-shadow: 0 0 6px var(--green), 0 0 18px var(--green), 0 0 34px #1a8f4a; }
 
   .cabinet {
     position: relative;
     width: 100%;
-    max-width: 640px;
+    max-width: 680px;
     border-radius: 20px;
     padding: 32px;
     background: linear-gradient(180deg, #1c1330 0%, #120b21 100%);
@@ -67,26 +69,35 @@
   }
   .cabinet.shake { animation: shakeX 0.5s ease; }
 
-  .marquee { text-align: center; margin-bottom: 24px; }
+  .marquee { text-align: center; margin-bottom: 22px; }
   .marquee-row { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 8px; }
   .marquee h1 { font-size: 18px; letter-spacing: 1px; margin: 0; }
   .marquee .sub { font-size: 20px; }
   .car-icon { font-size: 26px; }
 
+  .section-label {
+    font-size: 17px;
+    letter-spacing: 1px;
+    margin: 6px 0 10px;
+    padding-bottom: 4px;
+    border-bottom: 1px dashed #3a2a5c;
+  }
+
   .grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin-bottom: 20px;
+    gap: 14px;
+    margin-bottom: 18px;
   }
   @media (max-width: 480px) {
     .grid { grid-template-columns: 1fr; }
   }
   .field label {
     display: block;
-    font-size: 17px;
+    font-size: 16px;
     margin-bottom: 4px;
   }
+  .field .hint { font-size: 13px; color: #8b7fb0; }
   .field input {
     width: 100%;
     padding: 8px 12px;
@@ -99,10 +110,12 @@
     outline: none;
   }
   .field.gold input { border-color: #ffd23f55; }
+  .field.green input { border-color: #39ff8855; }
   .field input:focus { border-color: var(--cyan); }
   .field.gold input:focus { border-color: var(--gold); }
+  .field.green input:focus { border-color: var(--green); }
 
-  .btn-row { display: flex; gap: 12px; justify-content: center; margin-bottom: 24px; }
+  .btn-row { display: flex; gap: 12px; justify-content: center; margin: 22px 0; }
   .btn-calc {
     font-family: 'Press Start 2P', monospace;
     font-size: 13px;
@@ -149,6 +162,21 @@
   }
   .stat-label { font-size: 15px; letter-spacing: 1px; color: #9ca3af; margin-bottom: 6px; }
   .stat-value { font-family: 'Press Start 2P', monospace; font-size: 16px; }
+
+  .breakdown {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px dashed #3a2a5c;
+    font-size: 19px;
+  }
+  .breakdown .row {
+    display: flex;
+    justify-content: space-between;
+    padding: 3px 0;
+  }
+  .breakdown .row .savings { color: var(--green); }
+  .breakdown .row.total { font-size: 21px; margin-top: 6px; padding-top: 8px; border-top: 1px solid #3a2a5c; }
+
   .over-budget { text-align: center; margin-top: 16px; font-size: 22px; }
 
   .overlay {
@@ -196,11 +224,32 @@
       <div class="sub neon-magenta">INSERT NUMBERS TO PLAY</div>
     </div>
 
+    <div class="section-label neon-cyan">◆ THE CAR</div>
     <div class="grid">
       <div class="field">
-        <label class="neon-cyan">LOAN AMOUNT ($)</label>
-        <input type="number" id="amount" value="32000" />
+        <label class="neon-cyan">PURCHASE PRICE ($)</label>
+        <input type="number" id="price" value="10000" />
       </div>
+      <div class="field gold">
+        <label class="neon-gold">TAX RATE (%) <span class="hint">— PA is 6%</span></label>
+        <input type="number" step="0.01" id="taxRate" value="6" />
+      </div>
+      <div class="field">
+        <label class="neon-cyan">FEES ($) <span class="hint">— optional</span></label>
+        <input type="number" id="fees" value="0" />
+      </div>
+      <div class="field green">
+        <label class="neon-green">TRADE-IN ($) <span class="hint">— optional</span></label>
+        <input type="number" id="tradeIn" value="0" />
+      </div>
+      <div class="field">
+        <label class="neon-cyan">DOWN PAYMENT ($) <span class="hint">— optional</span></label>
+        <input type="number" id="down" value="0" />
+      </div>
+    </div>
+
+    <div class="section-label neon-magenta">◆ THE LOAN</div>
+    <div class="grid">
       <div class="field">
         <label class="neon-cyan">INTEREST RATE (%)</label>
         <input type="number" step="0.01" id="rate" value="6.5" />
@@ -210,8 +259,8 @@
         <input type="number" id="years" value="5" />
       </div>
       <div class="field gold">
-        <label class="neon-gold">MAX $/MONTH GOAL</label>
-        <input type="number" id="budget" value="500" />
+        <label class="neon-gold">MAX $/MONTH GOAL <span class="hint">— optional</span></label>
+        <input type="number" id="budget" value="0" />
       </div>
     </div>
 
@@ -235,47 +284,94 @@
           <div class="stat-value neon-gold" id="interestOut">$0</div>
         </div>
       </div>
+
+      <div class="breakdown" id="breakdown">
+        <div class="row"><span>Purchase price</span><span id="bdPrice">$0</span></div>
+        <div class="row"><span>Taxable amount <span style="color:#8b7fb0;font-size:15px;">(price − trade-in)</span></span><span id="bdTaxable">$0</span></div>
+        <div class="row"><span>Sales tax</span><span id="bdTax">$0</span></div>
+        <div class="row" id="bdSavingsRow" style="display:none;"><span>Trade-in tax savings</span><span class="savings" id="bdSavings">$0</span></div>
+        <div class="row"><span>Fees</span><span id="bdFees">$0</span></div>
+        <div class="row"><span>Down payment</span><span id="bdDown">$0</span></div>
+        <div class="row"><span>Trade-in credit</span><span id="bdTrade">$0</span></div>
+        <div class="row total neon-cyan"><span>AMOUNT FINANCED</span><span id="bdFinanced">$0</span></div>
+      </div>
+
       <div class="over-budget neon-magenta" id="overBudget" style="display:none;"></div>
     </div>
   </div>
 
 <script>
   const fmt = (v) => Math.round(v).toLocaleString();
+  const num = (id) => parseFloat(document.getElementById(id).value) || 0;
 
   function runCalc() {
-    const P = parseFloat(document.getElementById('amount').value) || 0;
-    const annualRate = parseFloat(document.getElementById('rate').value) || 0;
-    const n = (parseFloat(document.getElementById('years').value) || 0) * 12;
-    const B = parseFloat(document.getElementById('budget').value) || 0;
+    const price   = num('price');
+    const taxRate = num('taxRate');
+    const fees    = num('fees');
+    const tradeIn = num('tradeIn');
+    const down    = num('down');
+    const annualRate = num('rate');
+    const n = num('years') * 12;
+    const budget = num('budget');
 
-    if (P <= 0 || n <= 0) return;
+    if (price <= 0 || n <= 0) return;
 
+    // PA rule: tax charged on (price - trade-in), never below 0
+    const taxable = Math.max(price - tradeIn, 0);
+    const tax = taxable * (taxRate / 100);
+    const taxSavings = tradeIn > 0 ? Math.min(tradeIn, price) * (taxRate / 100) : 0;
+
+    // Total cost of the deal, then subtract what you put down + trade
+    const totalCost = price + tax + fees;
+    const financed = Math.max(totalCost - down - tradeIn, 0);
+
+    // Monthly payment
     const r = annualRate / 100 / 12;
     let M;
     if (r === 0) {
-      M = P / n;
+      M = financed / n;
     } else {
-      M = (P * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+      M = (financed * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
     }
-    const total = M * n;
-    const interest = total - P;
-    const hitJackpot = B > 0 && M <= B;
+    const totalPaid = M * n;
+    const interest = totalPaid - financed;
 
+    // Top stats
     document.getElementById('monthlyOut').textContent = '$' + fmt(M);
-    document.getElementById('totalOut').textContent = '$' + fmt(total);
+    document.getElementById('totalOut').textContent = '$' + fmt(totalPaid);
     document.getElementById('interestOut').textContent = '$' + fmt(interest);
+
+    // Breakdown
+    document.getElementById('bdPrice').textContent = '$' + fmt(price);
+    document.getElementById('bdTaxable').textContent = '$' + fmt(taxable);
+    document.getElementById('bdTax').textContent = '$' + fmt(tax);
+    document.getElementById('bdFees').textContent = '$' + fmt(fees);
+    document.getElementById('bdDown').textContent = '-$' + fmt(down);
+    document.getElementById('bdTrade').textContent = '-$' + fmt(tradeIn);
+    document.getElementById('bdFinanced').textContent = '$' + fmt(financed);
+
+    const savingsRow = document.getElementById('bdSavingsRow');
+    if (taxSavings > 0) {
+      savingsRow.style.display = 'flex';
+      document.getElementById('bdSavings').textContent = '-$' + fmt(taxSavings);
+    } else {
+      savingsRow.style.display = 'none';
+    }
+
     document.getElementById('scoreboard').style.display = 'block';
 
+    // Budget check
+    const hitJackpot = budget > 0 && M <= budget;
     const overBudgetEl = document.getElementById('overBudget');
-    if (B > 0 && !hitJackpot) {
+    if (budget > 0 && !hitJackpot) {
       overBudgetEl.style.display = 'block';
-      overBudgetEl.textContent = '$' + fmt(Math.abs(B - M)) + '/mo OVER YOUR GOAL — TRY NEW NUMBERS';
+      overBudgetEl.textContent = '$' + fmt(Math.abs(budget - M)) + '/mo OVER YOUR GOAL — TRY NEW NUMBERS';
     } else {
       overBudgetEl.style.display = 'none';
     }
 
     if (hitJackpot) {
-      showJackpot(B - M);
+      showJackpot(budget - M);
     } else {
       const cabinet = document.getElementById('cabinet');
       cabinet.classList.add('shake');
@@ -288,8 +384,6 @@
     document.getElementById('jackpotSub').textContent =
       "You're under budget by $" + fmt(margin) + "/mo";
     overlay.classList.add('show');
-
-    // spawn coins
     for (let i = 0; i < 24; i++) {
       const coin = document.createElement('div');
       coin.className = 'coin neon-gold';
@@ -301,12 +395,18 @@
       overlay.appendChild(coin);
       setTimeout(() => coin.remove(), 3200);
     }
-
     setTimeout(() => overlay.classList.remove('show'), 2600);
   }
 
   function resetAll() {
-    ['amount', 'rate', 'years', 'budget'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('price').value = '';
+    document.getElementById('taxRate').value = '6';
+    document.getElementById('fees').value = '0';
+    document.getElementById('tradeIn').value = '0';
+    document.getElementById('down').value = '0';
+    document.getElementById('rate').value = '';
+    document.getElementById('years').value = '';
+    document.getElementById('budget').value = '0';
     document.getElementById('scoreboard').style.display = 'none';
   }
 
