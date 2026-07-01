@@ -8,34 +8,50 @@
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
 <style>
   :root {
-    --cyan: #05f7ff;
+    --cyan: #00f7ff;
     --magenta: #ff2bd6;
     --gold: #ffd23f;
     --green: #39ff88;
+    --purple: #a855f7;
   }
   * { box-sizing: border-box; }
+  html, body { height: 100%; }
   body {
     margin: 0;
     min-height: 100vh;
     display: flex;
-    align-items: center;
-    justify-content: center;
     padding: 24px;
-    background: radial-gradient(circle at 50% 0%, #1a0f2e 0%, #0a0612 55%, #05030a 100%);
+    background:
+      radial-gradient(circle at 50% 0%, #241242 0%, #0d0718 55%, #05030a 100%);
     font-family: 'VT323', monospace;
     color: #fff;
+    overflow-x: hidden;
+    position: relative;
   }
-  .arcade-title {
-    font-family: 'Press Start 2P', monospace;
-    animation: flicker 4s infinite;
+  /* glowing grid floor */
+  body::before {
+    content: '';
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    height: 45vh;
+    background:
+      linear-gradient(transparent 0%, rgba(255,43,214,0.06) 100%),
+      repeating-linear-gradient(90deg, rgba(0,247,255,0.14) 0 2px, transparent 2px 60px),
+      repeating-linear-gradient(0deg, rgba(255,43,214,0.14) 0 2px, transparent 2px 40px);
+    transform: perspective(300px) rotateX(55deg);
+    transform-origin: bottom;
+    pointer-events: none;
+    z-index: 0;
   }
+
+  .arcade-title { font-family: 'Press Start 2P', monospace; animation: flicker 4s infinite; }
   @keyframes flicker {
     0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% { opacity: 1; }
     20%, 24%, 55% { opacity: 0.4; }
   }
   @keyframes pulseGlow {
     0%, 100% { filter: drop-shadow(0 0 8px currentColor); }
-    50% { filter: drop-shadow(0 0 20px currentColor); }
+    50% { filter: drop-shadow(0 0 24px currentColor); }
   }
   @keyframes shakeX {
     0%, 100% { transform: translateX(0); }
@@ -46,26 +62,77 @@
   }
   @keyframes fall {
     0% { transform: translateY(-40px) rotate(0deg); opacity: 1; }
-    100% { transform: translateY(110vh) rotate(360deg); opacity: 0.9; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0.9; }
   }
   @keyframes jackpotPop {
     0% { transform: scale(0.3) rotate(-8deg); opacity: 0; }
     60% { transform: scale(1.15) rotate(2deg); opacity: 1; }
     100% { transform: scale(1) rotate(0deg); opacity: 1; }
   }
-  .neon-cyan { color: var(--cyan); text-shadow: 0 0 6px var(--cyan), 0 0 18px var(--cyan), 0 0 34px #0891a8; }
-  .neon-magenta { color: var(--magenta); text-shadow: 0 0 6px var(--magenta), 0 0 18px var(--magenta), 0 0 34px #8a0e73; }
-  .neon-gold { color: var(--gold); text-shadow: 0 0 6px var(--gold), 0 0 18px var(--gold), 0 0 34px #a17d0f; }
-  .neon-green { color: var(--green); text-shadow: 0 0 6px var(--green), 0 0 18px var(--green), 0 0 34px #1a8f4a; }
+  @keyframes borderSpin {
+    0% { --angle: 0deg; }
+    100% { --angle: 360deg; }
+  }
+  @property --angle {
+    syntax: '<angle>';
+    initial-value: 0deg;
+    inherits: false;
+  }
+  @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+  @keyframes flash {
+    0%, 100% { background: rgba(5,3,10,0.72); }
+    50% { background: rgba(255,210,63,0.25); }
+  }
+
+  .neon-cyan { color: var(--cyan); text-shadow: 0 0 6px var(--cyan), 0 0 20px var(--cyan), 0 0 42px #0891a8; }
+  .neon-magenta { color: var(--magenta); text-shadow: 0 0 6px var(--magenta), 0 0 20px var(--magenta), 0 0 42px #8a0e73; }
+  .neon-gold { color: var(--gold); text-shadow: 0 0 6px var(--gold), 0 0 20px var(--gold), 0 0 42px #a17d0f; }
+  .neon-green { color: var(--green); text-shadow: 0 0 6px var(--green), 0 0 20px var(--green), 0 0 42px #1a8f4a; }
+
+  /* start screen */
+  #startScreen {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    background: radial-gradient(circle at 50% 40%, #241242 0%, #05030a 80%);
+    cursor: pointer;
+    text-align: center;
+    padding: 20px;
+  }
+  #startScreen h1 { font-family: 'Press Start 2P', monospace; font-size: clamp(18px, 4vw, 34px); margin: 0; line-height: 1.6; }
+  #startScreen .press { font-family: 'Press Start 2P', monospace; font-size: clamp(11px, 2.5vw, 16px); animation: blink 1.1s infinite; }
+  #startScreen .coin-slot { font-size: 44px; animation: pulseGlow 1.5s infinite; }
 
   .cabinet {
     position: relative;
+    margin: auto;
     width: 100%;
-    max-width: 680px;
-    border-radius: 20px;
+    max-width: 700px;
+    border-radius: 22px;
     padding: 32px;
-    background: linear-gradient(180deg, #1c1330 0%, #120b21 100%);
-    border: 2px solid #3a2a5c;
+    background: linear-gradient(180deg, #1f1438 0%, #120b21 100%);
+    border: 3px solid transparent;
+    background-clip: padding-box;
+    z-index: 1;
+  }
+  /* animated rainbow border */
+  .cabinet::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 22px;
+    padding: 3px;
+    background: conic-gradient(from var(--angle), var(--cyan), var(--magenta), var(--gold), var(--green), var(--purple), var(--cyan));
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    animation: borderSpin 5s linear infinite;
+    z-index: -1;
   }
   .cabinet.shake { animation: shakeX 0.5s ease; }
 
@@ -75,29 +142,28 @@
   .marquee .sub { font-size: 20px; }
   .car-icon { font-size: 26px; }
 
+  .hiscore {
+    display: none;
+    text-align: center;
+    font-size: 18px;
+    letter-spacing: 1px;
+    margin-bottom: 14px;
+    padding: 6px 10px;
+    border: 1px dashed #ffd23f66;
+    border-radius: 8px;
+  }
+
   .section-label {
     font-size: 17px;
     letter-spacing: 1px;
     margin: 6px 0 10px;
     padding-bottom: 4px;
-    border-bottom: 1px dashed #3a2a5c;
+    border-bottom: 1px dashed #4a3d70;
   }
-
-  .grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-bottom: 18px;
-  }
-  @media (max-width: 480px) {
-    .grid { grid-template-columns: 1fr; }
-  }
-  .field label {
-    display: block;
-    font-size: 16px;
-    margin-bottom: 4px;
-  }
-  .field .hint { font-size: 13px; color: #8b7fb0; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 18px; }
+  @media (max-width: 480px) { .grid { grid-template-columns: 1fr; } }
+  .field label { display: block; font-size: 16px; margin-bottom: 4px; }
+  .field .hint { font-size: 13px; color: #9d8fc4; }
   .field input {
     width: 100%;
     padding: 8px 12px;
@@ -105,17 +171,18 @@
     font-family: 'VT323', monospace;
     color: #fff;
     background: #150e26;
-    border: 2px solid #05f7ff55;
+    border: 2px solid #00f7ff66;
     border-radius: 6px;
     outline: none;
+    transition: box-shadow 0.15s ease;
   }
-  .field.gold input { border-color: #ffd23f55; }
-  .field.green input { border-color: #39ff8855; }
-  .field input:focus { border-color: var(--cyan); }
-  .field.gold input:focus { border-color: var(--gold); }
-  .field.green input:focus { border-color: var(--green); }
+  .field.gold input { border-color: #ffd23f66; }
+  .field.green input { border-color: #39ff8866; }
+  .field input:focus { border-color: var(--cyan); box-shadow: 0 0 12px #00f7ff88; }
+  .field.gold input:focus { border-color: var(--gold); box-shadow: 0 0 12px #ffd23f88; }
+  .field.green input:focus { border-color: var(--green); box-shadow: 0 0 12px #39ff8888; }
 
-  .btn-row { display: flex; gap: 12px; justify-content: center; margin: 22px 0; }
+  .btn-row { display: flex; gap: 12px; justify-content: center; margin: 22px 0; flex-wrap: wrap; }
   .btn-calc {
     font-family: 'Press Start 2P', monospace;
     font-size: 13px;
@@ -125,13 +192,10 @@
     padding: 14px 24px;
     border-radius: 10px;
     cursor: pointer;
-    box-shadow: 0 6px 0 #6b0a5c, 0 8px 14px rgba(255,43,214,0.4);
+    box-shadow: 0 6px 0 #6b0a5c, 0 0 22px rgba(255,43,214,0.55);
     transition: transform 0.08s ease, box-shadow 0.08s ease;
   }
-  .btn-calc:active {
-    transform: translateY(4px);
-    box-shadow: 0 2px 0 #6b0a5c, 0 4px 8px rgba(255,43,214,0.4);
-  }
+  .btn-calc:active { transform: translateY(4px); box-shadow: 0 2px 0 #6b0a5c, 0 0 12px rgba(255,43,214,0.55); }
   .btn-reset {
     font-family: 'VT323', monospace;
     font-size: 18px;
@@ -142,40 +206,34 @@
     border-radius: 10px;
     cursor: pointer;
   }
+  .btn-sound {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    color: #d1d5db;
+    background: linear-gradient(180deg, #2a2440 0%, #171228 100%);
+    border: 2px solid #4a3d70;
+    padding: 12px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+  }
 
   .scoreboard {
     display: none;
     border-radius: 12px;
     padding: 20px;
     background: #08050f;
-    border: 2px solid #3a2a5c;
-    box-shadow: inset 0 0 20px rgba(5,247,255,0.08);
+    border: 2px solid #4a3d70;
+    box-shadow: inset 0 0 26px rgba(0,247,255,0.1);
   }
-  .stats {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 16px;
-    text-align: center;
-  }
-  @media (max-width: 480px) {
-    .stats { grid-template-columns: 1fr; }
-  }
+  .stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; text-align: center; }
+  @media (max-width: 480px) { .stats { grid-template-columns: 1fr; } }
   .stat-label { font-size: 15px; letter-spacing: 1px; color: #9ca3af; margin-bottom: 6px; }
   .stat-value { font-family: 'Press Start 2P', monospace; font-size: 16px; }
 
-  .breakdown {
-    margin-top: 18px;
-    padding-top: 14px;
-    border-top: 1px dashed #3a2a5c;
-    font-size: 19px;
-  }
-  .breakdown .row {
-    display: flex;
-    justify-content: space-between;
-    padding: 3px 0;
-  }
-  .breakdown .row .savings { color: var(--green); }
-  .breakdown .row.total { font-size: 21px; margin-top: 6px; padding-top: 8px; border-top: 1px solid #3a2a5c; }
+  .breakdown { margin-top: 18px; padding-top: 14px; border-top: 1px dashed #4a3d70; font-size: 19px; }
+  .breakdown .row { display: flex; justify-content: space-between; padding: 3px 0; }
+  .breakdown .row .savings { color: var(--green); text-shadow: 0 0 8px var(--green); }
+  .breakdown .row.total { font-size: 21px; margin-top: 6px; padding-top: 8px; border-top: 1px solid #4a3d70; }
 
   .over-budget { text-align: center; margin-top: 16px; font-size: 22px; }
 
@@ -189,10 +247,12 @@
     background: rgba(5,3,10,0.72);
   }
   .overlay.show { display: flex; }
+  .overlay.megaflash { animation: flash 0.4s ease 3; }
   .jackpot-box { text-align: center; animation: jackpotPop 0.5s ease-out; }
-  .trophy { font-size: 56px; display: block; margin-bottom: 8px; animation: pulseGlow 0.8s infinite; }
-  .jackpot-title { font-size: 40px; letter-spacing: 2px; }
+  .trophy { font-size: 60px; display: block; margin-bottom: 8px; animation: pulseGlow 0.8s infinite; }
+  .jackpot-title { font-size: 42px; letter-spacing: 2px; }
   .jackpot-sub { font-size: 26px; margin-top: 10px; }
+  .jackpot-combo { font-family: 'Press Start 2P', monospace; font-size: 15px; margin-top: 14px; }
 
   .coin {
     position: fixed;
@@ -202,18 +262,47 @@
     animation-timing-function: cubic-bezier(0.4,0,0.6,1);
     animation-fill-mode: forwards;
   }
+
+  /* buttons: kill mobile double-tap zoom delay */
+  button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
+  /* phone-size tuning */
+  @media (max-width: 520px) {
+    body { padding: 12px; }
+    .cabinet { padding: 18px 14px; }
+    .marquee h1 { font-size: 13px; }
+    .car-icon { font-size: 20px; }
+    .marquee .sub { font-size: 17px; }
+    .jackpot-title { font-size: clamp(22px, 8vw, 34px); }
+    .jackpot-sub { font-size: 20px; padding: 0 12px; }
+    .jackpot-combo { font-size: 11px; }
+    .trophy { font-size: 48px; }
+    .stat-value { font-size: 14px; }
+    .breakdown { font-size: 17px; }
+    .btn-calc { padding: 14px 18px; font-size: 11px; }
+  }
 </style>
 </head>
 <body>
 
+  <!-- START SCREEN -->
+  <div id="startScreen">
+    <div class="coin-slot neon-gold">🪙</div>
+    <h1 class="neon-cyan">AUTO LOAN<br>ARCADE</h1>
+    <div class="press neon-magenta">▸ CLICK TO INSERT COIN ◂</div>
+  </div>
+
+  <!-- JACKPOT OVERLAY -->
   <div class="overlay" id="overlay">
     <div class="jackpot-box">
       <span class="trophy neon-gold">🏆</span>
-      <div class="arcade-title neon-gold jackpot-title">JACKPOT!</div>
+      <div class="arcade-title neon-gold jackpot-title" id="jackpotTitle">JACKPOT!</div>
       <div class="neon-cyan jackpot-sub" id="jackpotSub"></div>
+      <div class="neon-green jackpot-combo" id="jackpotCombo"></div>
     </div>
   </div>
 
+  <!-- CABINET -->
   <div class="cabinet" id="cabinet">
     <div class="marquee">
       <div class="marquee-row">
@@ -223,6 +312,8 @@
       </div>
       <div class="sub neon-magenta">INSERT NUMBERS TO PLAY</div>
     </div>
+
+    <div class="hiscore neon-gold" id="hiscore"></div>
 
     <div class="section-label neon-cyan">◆ THE CAR</div>
     <div class="grid">
@@ -267,6 +358,7 @@
     <div class="btn-row">
       <button class="btn-calc" id="calcBtn">⚡ CALCULATE</button>
       <button class="btn-reset" id="resetBtn">↺ RESET</button>
+      <button class="btn-sound" id="soundBtn" title="Toggle sound">🔊</button>
     </div>
 
     <div class="scoreboard" id="scoreboard">
@@ -287,7 +379,7 @@
 
       <div class="breakdown" id="breakdown">
         <div class="row"><span>Purchase price</span><span id="bdPrice">$0</span></div>
-        <div class="row"><span>Taxable amount <span style="color:#8b7fb0;font-size:15px;">(price − trade-in)</span></span><span id="bdTaxable">$0</span></div>
+        <div class="row"><span>Taxable amount <span style="color:#9d8fc4;font-size:15px;">(price − trade-in)</span></span><span id="bdTaxable">$0</span></div>
         <div class="row"><span>Sales tax</span><span id="bdTax">$0</span></div>
         <div class="row" id="bdSavingsRow" style="display:none;"><span>Trade-in tax savings</span><span class="savings" id="bdSavings">$0</span></div>
         <div class="row"><span>Fees</span><span id="bdFees">$0</span></div>
@@ -301,10 +393,108 @@
   </div>
 
 <script>
+  // ============ SOUND ENGINE (Web Audio, no files needed) ============
+  let audioCtx = null;
+  let soundOn = true;
+
+  function ctx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    return audioCtx;
+  }
+
+  function tone(freq, start, dur, type = 'square', vol = 0.12) {
+    if (!soundOn) return;
+    const c = ctx();
+    const o = c.createOscillator();
+    const g = c.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, c.currentTime + start);
+    g.gain.setValueAtTime(vol, c.currentTime + start);
+    g.gain.exponentialRampToValueAtTime(0.001, c.currentTime + start + dur);
+    o.connect(g).connect(c.destination);
+    o.start(c.currentTime + start);
+    o.stop(c.currentTime + start + dur);
+  }
+
+  const sfx = {
+    coinInsert() { tone(988, 0, 0.08); tone(1319, 0.08, 0.22); },
+    blip() { tone(660, 0, 0.05, 'square', 0.06); },
+    click() { tone(440, 0, 0.06); tone(587, 0.06, 0.08); },
+    tick() { tone(880 + Math.random() * 300, 0, 0.03, 'square', 0.05); },
+    buzzer() { tone(196, 0, 0.25, 'sawtooth', 0.15); tone(147, 0.22, 0.35, 'sawtooth', 0.15); },
+    jackpot() {
+      // rising arcade jingle
+      const notes = [523, 659, 784, 1047, 784, 1047, 1319];
+      notes.forEach((f, i) => tone(f, i * 0.11, 0.14, 'square', 0.12));
+      // sparkle layer
+      [1568, 1760, 2093].forEach((f, i) => tone(f, 0.8 + i * 0.09, 0.1, 'triangle', 0.08));
+    },
+    megaJackpot() {
+      const notes = [523, 659, 784, 1047, 1319, 1568, 2093];
+      notes.forEach((f, i) => tone(f, i * 0.09, 0.13, 'square', 0.13));
+      notes.forEach((f, i) => tone(f * 1.5, 0.7 + i * 0.09, 0.13, 'triangle', 0.09));
+      tone(2637, 1.5, 0.4, 'triangle', 0.1);
+    },
+    coinClink() { tone(1976 + Math.random() * 400, 0, 0.05, 'triangle', 0.05); }
+  };
+
+  // ============ HELPERS ============
   const fmt = (v) => Math.round(v).toLocaleString();
   const num = (id) => parseFloat(document.getElementById(id).value) || 0;
+  const $ = (id) => document.getElementById(id);
 
+  // ============ START SCREEN ============
+  $('startScreen').addEventListener('click', () => {
+    sfx.coinInsert();
+    $('startScreen').style.display = 'none';
+  });
+
+  // ============ SOUND TOGGLE ============
+  $('soundBtn').addEventListener('click', () => {
+    soundOn = !soundOn;
+    $('soundBtn').textContent = soundOn ? '🔊' : '🔇';
+    if (soundOn) sfx.blip();
+  });
+
+  // input blips
+  document.querySelectorAll('input').forEach(inp => {
+    inp.addEventListener('focus', () => sfx.blip());
+  });
+
+  // ============ HIGH SCORE (session best) ============
+  let bestMonthly = null;
+  function updateHiscore(M) {
+    if (bestMonthly === null || M < bestMonthly) {
+      bestMonthly = M;
+      $('hiscore').style.display = 'block';
+      $('hiscore').textContent = '★ HIGH SCORE — LOWEST PAYMENT: $' + fmt(bestMonthly) + '/mo ★';
+      return true;
+    }
+    return false;
+  }
+
+  // ============ PAYMENT REEL (odometer spin-up) ============
+  function spinReel(el, finalValue, duration = 900) {
+    const start = performance.now();
+    function frame(now) {
+      const t = Math.min((now - start) / duration, 1);
+      const eased = 1 - Math.pow(1 - t, 3);
+      if (t < 1) {
+        const jitter = finalValue * (1 - eased) * (0.5 + Math.random());
+        el.textContent = '$' + fmt(finalValue * eased + jitter);
+        if (Math.random() < 0.4) sfx.tick();
+        requestAnimationFrame(frame);
+      } else {
+        el.textContent = '$' + fmt(finalValue);
+      }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  // ============ MAIN CALC ============
   function runCalc() {
+    sfx.click();
     const price   = num('price');
     const taxRate = num('taxRate');
     const fees    = num('fees');
@@ -314,55 +504,50 @@
     const n = num('years') * 12;
     const budget = num('budget');
 
-    if (price <= 0 || n <= 0) return;
+    if (price <= 0 || n <= 0) { sfx.buzzer(); return; }
 
     // PA rule: tax charged on (price - trade-in), never below 0
     const taxable = Math.max(price - tradeIn, 0);
     const tax = taxable * (taxRate / 100);
     const taxSavings = tradeIn > 0 ? Math.min(tradeIn, price) * (taxRate / 100) : 0;
 
-    // Total cost of the deal, then subtract what you put down + trade
     const totalCost = price + tax + fees;
     const financed = Math.max(totalCost - down - tradeIn, 0);
 
-    // Monthly payment
     const r = annualRate / 100 / 12;
     let M;
-    if (r === 0) {
-      M = financed / n;
-    } else {
-      M = (financed * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
-    }
+    if (r === 0) M = financed / n;
+    else M = (financed * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1);
+
     const totalPaid = M * n;
     const interest = totalPaid - financed;
 
-    // Top stats
-    document.getElementById('monthlyOut').textContent = '$' + fmt(M);
-    document.getElementById('totalOut').textContent = '$' + fmt(totalPaid);
-    document.getElementById('interestOut').textContent = '$' + fmt(interest);
+    // stats — monthly spins like a reel, others fill in
+    $('scoreboard').style.display = 'block';
+    spinReel($('monthlyOut'), M);
+    $('totalOut').textContent = '$' + fmt(totalPaid);
+    $('interestOut').textContent = '$' + fmt(interest);
 
-    // Breakdown
-    document.getElementById('bdPrice').textContent = '$' + fmt(price);
-    document.getElementById('bdTaxable').textContent = '$' + fmt(taxable);
-    document.getElementById('bdTax').textContent = '$' + fmt(tax);
-    document.getElementById('bdFees').textContent = '$' + fmt(fees);
-    document.getElementById('bdDown').textContent = '-$' + fmt(down);
-    document.getElementById('bdTrade').textContent = '-$' + fmt(tradeIn);
-    document.getElementById('bdFinanced').textContent = '$' + fmt(financed);
-
-    const savingsRow = document.getElementById('bdSavingsRow');
+    // breakdown
+    $('bdPrice').textContent = '$' + fmt(price);
+    $('bdTaxable').textContent = '$' + fmt(taxable);
+    $('bdTax').textContent = '$' + fmt(tax);
+    $('bdFees').textContent = '$' + fmt(fees);
+    $('bdDown').textContent = '-$' + fmt(down);
+    $('bdTrade').textContent = '-$' + fmt(tradeIn);
+    $('bdFinanced').textContent = '$' + fmt(financed);
     if (taxSavings > 0) {
-      savingsRow.style.display = 'flex';
-      document.getElementById('bdSavings').textContent = '-$' + fmt(taxSavings);
+      $('bdSavingsRow').style.display = 'flex';
+      $('bdSavings').textContent = '-$' + fmt(taxSavings);
     } else {
-      savingsRow.style.display = 'none';
+      $('bdSavingsRow').style.display = 'none';
     }
 
-    document.getElementById('scoreboard').style.display = 'block';
+    updateHiscore(M);
 
-    // Budget check
+    // budget check — celebration scales with how far under you are
     const hitJackpot = budget > 0 && M <= budget;
-    const overBudgetEl = document.getElementById('overBudget');
+    const overBudgetEl = $('overBudget');
     if (budget > 0 && !hitJackpot) {
       overBudgetEl.style.display = 'block';
       overBudgetEl.textContent = '$' + fmt(Math.abs(budget - M)) + '/mo OVER YOUR GOAL — TRY NEW NUMBERS';
@@ -371,47 +556,69 @@
     }
 
     if (hitJackpot) {
-      showJackpot(budget - M);
-    } else {
-      const cabinet = document.getElementById('cabinet');
-      cabinet.classList.add('shake');
-      setTimeout(() => cabinet.classList.remove('shake'), 500);
+      // wait for reel to finish, then celebrate
+      setTimeout(() => showJackpot(budget - M, budget), 950);
+    } else if (budget > 0) {
+      const cab = $('cabinet');
+      cab.classList.add('shake');
+      sfx.buzzer();
+      setTimeout(() => cab.classList.remove('shake'), 500);
     }
   }
 
-  function showJackpot(margin) {
-    const overlay = document.getElementById('overlay');
-    document.getElementById('jackpotSub').textContent =
-      "You're under budget by $" + fmt(margin) + "/mo";
+  // ============ JACKPOT — bigger margin = bigger party ============
+  function showJackpot(margin, budget) {
+    const overlay = $('overlay');
+    const pct = budget > 0 ? margin / budget : 0;
+
+    // tiers: >25% under = MEGA, >10% = SUPER, else normal
+    let tier = 1, coinCount = 24, title = 'JACKPOT!', combo = '';
+    if (pct >= 0.25) { tier = 3; coinCount = 70; title = 'MEGA JACKPOT!!'; combo = '★★★ COMBO x3 — CRUSHING IT ★★★'; }
+    else if (pct >= 0.10) { tier = 2; coinCount = 45; title = 'SUPER JACKPOT!'; combo = '★★ COMBO x2 ★★'; }
+
+    $('jackpotTitle').textContent = title;
+    $('jackpotSub').textContent = "You're under budget by $" + fmt(margin) + "/mo";
+    $('jackpotCombo').textContent = combo;
+
     overlay.classList.add('show');
-    for (let i = 0; i < 24; i++) {
+    if (tier === 3) overlay.classList.add('megaflash');
+    if (tier >= 2) sfx.megaJackpot(); else sfx.jackpot();
+
+    for (let i = 0; i < coinCount; i++) {
       const coin = document.createElement('div');
       coin.className = 'coin neon-gold';
       coin.textContent = '🪙';
       coin.style.left = Math.random() * 100 + '%';
-      coin.style.fontSize = (14 + Math.random() * 18) + 'px';
-      coin.style.animationDelay = (Math.random() * 0.6) + 's';
-      coin.style.animationDuration = (1.4 + Math.random() * 1.2) + 's';
+      coin.style.fontSize = (14 + Math.random() * (tier === 3 ? 26 : 18)) + 'px';
+      coin.style.animationDelay = (Math.random() * 0.7) + 's';
+      coin.style.animationDuration = (1.3 + Math.random() * 1.3) + 's';
       overlay.appendChild(coin);
-      setTimeout(() => coin.remove(), 3200);
+      setTimeout(() => sfx.coinClink(), 200 + Math.random() * 1500);
+      setTimeout(() => coin.remove(), 3400);
     }
-    setTimeout(() => overlay.classList.remove('show'), 2600);
+
+    const showTime = tier === 3 ? 3600 : 2800;
+    setTimeout(() => {
+      overlay.classList.remove('show');
+      overlay.classList.remove('megaflash');
+    }, showTime);
   }
 
   function resetAll() {
-    document.getElementById('price').value = '';
-    document.getElementById('taxRate').value = '6';
-    document.getElementById('fees').value = '0';
-    document.getElementById('tradeIn').value = '0';
-    document.getElementById('down').value = '0';
-    document.getElementById('rate').value = '';
-    document.getElementById('years').value = '';
-    document.getElementById('budget').value = '0';
-    document.getElementById('scoreboard').style.display = 'none';
+    sfx.blip();
+    $('price').value = '';
+    $('taxRate').value = '6';
+    $('fees').value = '0';
+    $('tradeIn').value = '0';
+    $('down').value = '0';
+    $('rate').value = '';
+    $('years').value = '';
+    $('budget').value = '0';
+    $('scoreboard').style.display = 'none';
   }
 
-  document.getElementById('calcBtn').addEventListener('click', runCalc);
-  document.getElementById('resetBtn').addEventListener('click', resetAll);
+  $('calcBtn').addEventListener('click', runCalc);
+  $('resetBtn').addEventListener('click', resetAll);
 </script>
 
 </body>
