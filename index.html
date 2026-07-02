@@ -28,7 +28,6 @@
     overflow-x: hidden;
     position: relative;
   }
-  /* glowing grid floor */
   body::before {
     content: '';
     position: fixed;
@@ -89,7 +88,6 @@
   .neon-gold { color: var(--gold); text-shadow: 0 0 6px var(--gold), 0 0 20px var(--gold), 0 0 42px #a17d0f; }
   .neon-green { color: var(--green); text-shadow: 0 0 6px var(--green), 0 0 20px var(--green), 0 0 42px #1a8f4a; }
 
-  /* start screen */
   #startScreen {
     position: fixed;
     inset: 0;
@@ -120,7 +118,6 @@
     background-clip: padding-box;
     z-index: 1;
   }
-  /* animated rainbow border */
   .cabinet::before {
     content: '';
     position: absolute;
@@ -237,6 +234,15 @@
 
   .over-budget { text-align: center; margin-top: 16px; font-size: 22px; }
 
+  .needed-down {
+    text-align: center;
+    margin-top: 12px;
+    font-size: 20px;
+    padding: 10px 14px;
+    border: 1px dashed #ffd23f44;
+    border-radius: 8px;
+  }
+
   .overlay {
     display: none;
     position: fixed;
@@ -263,10 +269,8 @@
     animation-fill-mode: forwards;
   }
 
-  /* buttons: kill mobile double-tap zoom delay */
   button { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
-  /* phone-size tuning */
   @media (max-width: 520px) {
     body { padding: 12px; }
     .cabinet { padding: 18px 14px; }
@@ -389,6 +393,7 @@
       </div>
 
       <div class="over-budget neon-magenta" id="overBudget" style="display:none;"></div>
+      <div class="needed-down neon-gold" id="neededDown" style="display:none;"></div>
     </div>
   </div>
 
@@ -424,10 +429,8 @@
     tick() { tone(880 + Math.random() * 300, 0, 0.03, 'square', 0.05); },
     buzzer() { tone(196, 0, 0.25, 'sawtooth', 0.15); tone(147, 0.22, 0.35, 'sawtooth', 0.15); },
     jackpot() {
-      // rising arcade jingle
       const notes = [523, 659, 784, 1047, 784, 1047, 1319];
       notes.forEach((f, i) => tone(f, i * 0.11, 0.14, 'square', 0.12));
-      // sparkle layer
       [1568, 1760, 2093].forEach((f, i) => tone(f, 0.8 + i * 0.09, 0.1, 'triangle', 0.08));
     },
     megaJackpot() {
@@ -457,7 +460,6 @@
     if (soundOn) sfx.blip();
   });
 
-  // input blips
   document.querySelectorAll('input').forEach(inp => {
     inp.addEventListener('focus', () => sfx.blip());
   });
@@ -555,8 +557,45 @@
       overBudgetEl.style.display = 'none';
     }
 
+    // ===== REQUIRED DOWN PAYMENT TO HIT TARGET MONTHLY =====
+    const neededDownEl = $('neededDown');
+    if (budget > 0) {
+      // Back-solve: what loan amount produces the target monthly payment?
+      let financedNeeded;
+      if (r === 0) financedNeeded = budget * n;
+      else financedNeeded = budget * (Math.pow(1 + r, n) - 1) / (r * Math.pow(1 + r, n));
+
+      // Down payment required = everything not covered by the loan
+      const downNeeded = Math.max(totalCost - tradeIn - financedNeeded, 0);
+
+      if (downNeeded > down + 0.50) {
+        // User needs to put more down
+        const extraDown = downNeeded - down;
+        neededDownEl.style.display = 'block';
+        neededDownEl.innerHTML =
+          '💡 PUT DOWN <strong>$' + fmt(extraDown) + '</strong> MORE<br>' +
+          '<span style="font-size:15px;color:#9d8fc4;">($' + fmt(downNeeded) +
+          ' total down) to hit your $' + fmt(budget) + '/mo goal</span>';
+      } else if (downNeeded > 0) {
+        // Already under budget, but show how little down they could get away with
+        neededDownEl.style.display = 'block';
+        neededDownEl.innerHTML =
+          '✅ YOU\'RE UNDER BUDGET!<br>' +
+          '<span style="font-size:15px;color:#9d8fc4;">Only $' + fmt(downNeeded) +
+          ' down needed to stay at $' + fmt(budget) + '/mo</span>';
+      } else {
+        // Even $0 down keeps them under budget
+        neededDownEl.style.display = 'block';
+        neededDownEl.innerHTML =
+          '✅ NO DOWN PAYMENT NEEDED<br>' +
+          '<span style="font-size:15px;color:#9d8fc4;">You\'d hit $' + fmt(budget) +
+          '/mo with $0 down</span>';
+      }
+    } else {
+      neededDownEl.style.display = 'none';
+    }
+
     if (hitJackpot) {
-      // wait for reel to finish, then celebrate
       setTimeout(() => showJackpot(budget - M, budget), 950);
     } else if (budget > 0) {
       const cab = $('cabinet');
@@ -571,7 +610,6 @@
     const overlay = $('overlay');
     const pct = budget > 0 ? margin / budget : 0;
 
-    // tiers: >25% under = MEGA, >10% = SUPER, else normal
     let tier = 1, coinCount = 24, title = 'JACKPOT!', combo = '';
     if (pct >= 0.25) { tier = 3; coinCount = 70; title = 'MEGA JACKPOT!!'; combo = '★★★ COMBO x3 — CRUSHING IT ★★★'; }
     else if (pct >= 0.10) { tier = 2; coinCount = 45; title = 'SUPER JACKPOT!'; combo = '★★ COMBO x2 ★★'; }
@@ -615,6 +653,7 @@
     $('years').value = '';
     $('budget').value = '0';
     $('scoreboard').style.display = 'none';
+    $('neededDown').style.display = 'none';
   }
 
   $('calcBtn').addEventListener('click', runCalc);
